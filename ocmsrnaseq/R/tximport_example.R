@@ -1,0 +1,15 @@
+library(tximport)
+
+# Importing transcript level estimated counts
+
+# transcript2gene mapping
+tx2gene <- read.csv("transcripts2genes.tsv", header=TRUE, stringsAsFactors=FALSE, sep="\t")
+
+# files to import 
+files <- list.files()[grep("*abundance.tsv", list.files())]
+names(files) <- gsub("_abundance.tsv", "", files)
+
+txi <- tximport(files, type = "kallisto", tx2gene = tx2gene)
+
+# to run with DESeq2
+# dds <- DESeqDataSetFromTximport(txi, ..., ...)

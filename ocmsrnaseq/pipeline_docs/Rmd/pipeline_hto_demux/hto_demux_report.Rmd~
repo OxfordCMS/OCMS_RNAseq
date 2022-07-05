@@ -1,0 +1,120 @@
+---
+title: "HTO demux report"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, dev="CairoPNG", echo=FALSE}
+knitr::opts_chunk$set(dev.args=list(png=list(type="cairo")))
+```
+
+
+```{r laod libraries, echo=FALSE, message=FALSE}
+library(Seurat)
+library(reshape)
+library(ggplot2)
+library(dplyr)
+```
+
+
+## Overview
+
+This report is based on results of demultiplexing of GEX data using Seurat HTODemux. It aims to help visualise the quality of the demultiplexing.
+
+
+### Global classifications
+
+This section displays the global classifications i.e number of doublets, singlets and negative cells.
+
+```{r global classifications, echo=FALSE, message=FALSE, fig.height=5, fig.width=15}
+
+hashtags <- list.files("../hto_demux.dir")
+nsamples <- length(hashtags)
+
+gclassifications <- list()
+for (i in 1:nsamples){
+  fname <- hashtags[i]
+  hashtag <- readRDS(paste0("../hto_demux.dir/", fname))
+  sample_name <- gsub("_hashtag.rds", "", fname)
+  gclass <- as.data.frame(table(hashtag$HTO_classification.global))
+  gclass$sample <- sample_name
+  gclassifications[[i]] <- gclass
+}
+gclassifications <- dplyr::bind_rows(gclassifications)
+ggplot(gclassifications, aes(x=sample, y=Freq)) +
+  geom_bar(stat="identity") +
+  theme_bw() +
+  facet_wrap(~Var1) +
+  theme(axis.text.x = element_text(angle = 45, hjust=1))
+
+```
+
+### Ridgeplots
+
+The ridgeplots below give a sense of the expression level of each antibody-derived tag (ADT) for a collection of cells whose maximum count is for the selected ADT.
+
+
+```{r ridgeplots, echo=FALSE, message=FALSE, fig.height=30, fig.width=40}
+
+ridges <- list()
+for (i in 1:nsamples){
+  fname <- hashtags[i]
+  hashtag <- readRDS(paste0("../hto_demux.dir/", fname))
+  sample_name <- gsub("_hashtag.rds", "", fname)
+  cat(paste0(sample_name, "\n"))
+  # Group cells based on the max HTO signal
+  Idents(hashtag) <- "HTO_maxID"
+  p <- RidgePlot(hashtag, assay = "HTO", features = rownames(hashtag[["HTO"]]), ncol = 2) +
+    ggtitle(sample_name)
+  print(p)
+}
+
+```
+
+### Violin plots
+
+These violin plots give an idea of the UMI count amongst differect cell classifications i.e. singlets, doublets and negatives. In theory doublets will have higher UMI counts than singlets and negatives very low.
+
+```{r violin plots, echo=FALSE, message=FALSE}
+
+violins <- list()
+for (i in 1:nsamples){
+  fname <- hashtags[i]
+  hashtag <- readRDS(paste0("../hto_demux.dir/", fname))
+  sample_name <- gsub("_hashtag.rds", "", fname)
+  
+  Idents(hashtag) <- "HTO_classification.global"
+  p <- VlnPlot(hashtag, features = "nCount_RNA", pt.size = 0.1, log = TRUE)  +
+    ggtitle(sample_name)
+  print(p)
+}
+
+```
+
+### tSNE
+
+```{r tSNE, echo=FALSE, message=FALSE}
+
+for (i in 1:nsamples){
+  fname <- hashtags[i]
+  hashtag <- readRDS(paste0("../hto_demux.dir/", fname))
+  sample_name <- gsub("_hashtag.rds", "", fname)
+  
+  # First, we will remove negative cells from the object
+  Idents(hashtag) <- "HTO_classification.global"
+  if ("Negative" %in% hashtag$HTO_classification.global){
+      hashtag.subset <- subset(hashtag, idents = "Negative", invert = TRUE)}
+  else{
+      hashtag.subset <- hashtag
+
+  # Calculate a distance matrix using HTO
+  hto.dist.mtx <- as.matrix(dist(t(GetAssayData(object = hashtag.subset, assay = "HTO"))))
+
+  # Calculate tSNE embeddings with a distance matrix
+  hashtag.subset <- RunTSNE(hashtag.subset, distance.matrix = hto.dist.mtx, perplexity = 100)
+  p <- DimPlot(hashtag.subset) +
+    ggtitle(sample_name)
+  print(p)
+}
+```

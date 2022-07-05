@@ -1,0 +1,24 @@
+######################################################
+# Parameterisation for pipeline_cite-seq-count.py
+######################################################
+
+citeseqcount:
+    # tag_file specifies the tags that were used for 
+    # multiplexing the samples. The file is a comma
+    # separated table in the form sample_id,tag_seq,tag_name
+    tag_file: tags.csv
+
+    # Required options are specified here. Please see 
+    # https://hoohm.github.io/CITE-seq-Count/Running-the-script/
+    # for details.
+    cbf: 1
+    cbl: 16
+    umif: 17
+    umil: 26
+    cells: 15000
+
+    nthreads: 1
+
+    # additional options - see CITE-seq-count docs for details of
+    # additional options
+    options = "-trim 32"

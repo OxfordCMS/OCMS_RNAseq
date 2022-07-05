@@ -1,0 +1,6 @@
+
+kallisto:
+
+    # kallisto indexed transcriptome
+    transcriptome: ?!
+

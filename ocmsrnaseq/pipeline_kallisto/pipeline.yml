@@ -1,0 +1,10 @@
+
+kallisto:
+
+    # kallisto indexed transcriptome
+    transcriptome: ?!
+
+    nthreads: 1
+    job_mem: 2Gb
+
+    options: 

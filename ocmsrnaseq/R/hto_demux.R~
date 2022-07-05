@@ -1,0 +1,108 @@
+###################################################
+###################################################
+# HTODemux using output from cite-seq-count
+# and cellranger with hash-tag oligos using Seurat
+###################################################
+###################################################
+
+suppressPackageStartupMessages(library("optparse"))
+suppressPackageStartupMessages(library("Seurat"))
+suppressPackageStartupMessages(library("ggplot2"))
+suppressPackageStartupMessages(library("futile.logger"))
+
+# make options list
+option_list <- list(
+               make_option(c("--adt-dir"), default=NA, type="character",
+                           help="directory containing matrices from cite-seq-count on ADT [default %default]"),
+               make_option(c("--gex-dir"), default="NA",
+                           help="directory containing matrices from cellranger count on GEX data [default %default]"),
+               make_option(c("--out-dir"), default="NA",
+                           help="directory to write outputs from HTO demux [default %default]"),
+               make_option(c("--sample-name"), default="NA",
+                           help="name of sample being processed [default %default]"),
+               make_option(c("--filter-umi-count"), default="NA",
+                           help="filter cell barcodes based on umi count [default %default]"),
+               make_option(c("--filter-htos"), default="NA",
+                           help="filter known problematic HTOs [default %default]")
+
+)
+
+# suppress warning messages
+options(warn=-1)
+
+###########################
+# get command line options
+###########################
+opt <- parse_args(OptionParser(option_list=option_list))
+
+umis <- Read10X(data.dir=opt$`gex-dir`)
+htos <- Read10X(data.dir=opt$`adt-dir`, gene.column=1)
+
+# filter cell barcode based on UMI count
+umis <- umis[,Matrix::colSums(umis) >= opt$`filter-umi-count`]
+
+# removed unmapped row
+htos <- htos[rownames(htos) != "unmapped",]
+
+# filter poor hashtags
+htos <- htos[Matrix::rowSums(htos) > 0,]
+
+# filter poor cells from the HTO matrix
+htos <- htos[,Matrix::colSums(htos) > 0,]
+
+# filter out know problematic hto sequences
+bad_hto_list <- unlist(strsplit(opt$`filter-htos`, ","))
+if (bad_hto_list == "NA"){
+    bad_hto_list <- c()
+}
+
+htos <- htos[!(rownames(htos) %in% opt$`filter-htos`),]
+
+print(rownames(htos))
+
+# Select joint barcodes in HTO and GEX
+
+# NB ep.umis contains a -1 at the end of the barcode sequence
+colnames(umis) <- gsub("-1", "", colnames(umis))
+joint.bcs <- intersect(colnames(umis), colnames(htos))
+
+# Subset RNA and HTO counts by joint cell barcodes
+umis <- umis[, joint.bcs]
+htos <- as.matrix(htos[, joint.bcs])
+
+
+# Setup Seurat object
+hashtag <- CreateSeuratObject(counts = umis)
+
+# Normalize RNA data with log normalization
+hashtag <- NormalizeData(hashtag)
+
+# Find and scale variable features
+hashtag <- FindVariableFeatures(hashtag, selection.method = "mean.var.plot")
+hashtag <- ScaleData(hashtag, features = VariableFeatures(hashtag))
+
+
+# Add HTO data as a new assay independent from RNA
+hashtag[["HTO"]] <- CreateAssayObject(counts = htos)
+
+# Normalize HTO data, here we use centered log-ratio (CLR) transformation
+hashtag <- NormalizeData(hashtag, assay = "HTO", normalization.method = "CLR")
+
+# Demultiplex
+hashtag <- HTODemux(hashtag, assay = "HTO", positive.quantile = 0.99)
+
+
+#################################################################################
+# Plots
+#################################################################################
+
+# Group cells based on the max HTO signal
+Idents(hashtag) <- "HTO_maxID"
+RidgePlot(hashtag, assay = "HTO", features = rownames(hashtag[["HTO"]]), ncol = 2)
+
+if (!(dir.exists(opt$`out-dir`))){
+    dir.create(opt$`out-dir`)}
+filename <- paste0(opt$`out-dir`, "/", opt$`sample-name`, "_hashtag.rds")
+
+# save the Seurat object for later visualisation
+saveRDS(hashtag, file = filename) 

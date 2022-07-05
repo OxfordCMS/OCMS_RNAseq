@@ -1,0 +1,75 @@
+---
+title: "Testing demultiplexing of scRNAseq"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load libraries, echo=FALSE, message=FALSE}
+library(Seurat)
+```
+
+## Overview
+
+This is a script that uses Seurat to attempt to demultiplex scRNA-seq GEX data. I have used cite-seq-count to get counts for the ADTs and cellranger count to get transcriptome counts from the GEX data. At this point I am only looking at one 10X run i.e. this is 9 samples multiplexed.
+
+
+```{r read data in data, echo = FALSE, message=FALSE}
+ep.umis <- Read10X(data.dir='../test_cellranger/EP_WSdGUT_UC10888161/outs/raw_feature_bc_matrix/')
+ep.htos <- Read10X(data.dir='../test_demux/EP_cells_ADT/cite-seq-count.dir/WSdGUT_UC10888221/read_count/', gene.column=1)
+
+```
+
+```{r demux, echo=FALSE, message=FALSE}
+# removed unmapped row
+ep.htos <- ep.htos[rownames(ep.htos) != "unmapped",]
+
+# Select joint barcodes in HTO and GEX
+
+# NB ep.umis contains a -1 at the end of the barcode sequence
+colnames(ep.umis) <- gsub("-1", "", colnames(ep.umis))
+joint.bcs <- intersect(colnames(ep.umis), colnames(ep.htos))
+
+# Subset RNA and HTO counts by joint cell barcodes
+ep.umis <- ep.umis[, joint.bcs]
+ep.htos <- as.matrix(ep.htos[, joint.bcs])
+
+# Setup Seurat object
+ep.hashtag <- CreateSeuratObject(counts = ep.umis)
+
+# Normalize RNA data with log normalization
+ep.hashtag <- NormalizeData(ep.hashtag)
+
+# Find and scale variable features
+ep.hashtag <- FindVariableFeatures(ep.hashtag, selection.method = "mean.var.plot")
+ep.hashtag <- ScaleData(ep.hashtag, features = VariableFeatures(ep.hashtag))
+
+
+# Add HTO data as a new assay independent from RNA
+ep.hashtag[["HTO"]] <- CreateAssayObject(counts = ep.htos)
+
+# Normalize HTO data, here we use centered log-ratio (CLR) transformation
+ep.hashtag <- NormalizeData(ep.hashtag, assay = "HTO", normalization.method = "CLR")
+
+# Demultiplex
+ep.hashtag <- HTODemux(ep.hashtag, assay = "HTO", positive.quantile = 0.99)
+
+```
+
+```{r table demux, echo=FALSE, message=FALSE}
+# Global classification results
+table(ep.hashtag$HTO_classification.global)
+
+# Group cells based on the max HTO signal
+Idents(ep.hashtag) <- "HTO_maxID"
+RidgePlot(ep.hashtag, assay = "HTO", features = rownames(ep.hashtag[["HTO"]])[1:5], ncol = 2)
+
+FeatureScatter(ep.hashtag, feature1 = "GI6642-sigmoid-GGTTGCCAGATGTCA", feature2 = "GI3901-sigmoid-TTCCGCCTCTCTTTG")
+
+Idents(ep.hashtag) <- "HTO_classification.global"
+VlnPlot(ep.hashtag, features = "nCount_RNA", pt.size = 0.1, log = TRUE)
+```
