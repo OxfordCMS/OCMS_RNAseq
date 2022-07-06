@@ -1,0 +1,3 @@
+include ocmsrnaseq/scripts/*.py
+include ocmsrnaseq/R/*.R
+include ocmsrnaseq/pipeline_*/pipeline.yml

@@ -9,7 +9,7 @@ setup(
     # package information
     name='ocms_rnaseq',
     version="0.0.1",
-    description='OCMS_RNAseq : Oxford Centre for Microbiome Studies pipelines for RNAseq processing'
+    description='OCMS_RNAseq : Oxford Centre for Microbiome Studies pipelines for RNAseq processing',
     author='Nicholas Ilott',
     license="MIT",
     platforms=["any"],
@@ -17,7 +17,7 @@ setup(
     url="https://github.com/OxfordCMS/OCMS_RNAseq",
     packages=find_packages("./") + find_packages("./ocmsrnaseq/"),
     entry_points={
-        'console_scripts': ['ocms_rnaseq = ocmsrnaseq.ocms_rnaseqs:main']
+        'console_scripts': ['ocms_rnaseq = ocmsrnaseq.ocms_rnaseq:main']
     },
     include_package_data=True,
     python_requires='>=3.6.0'                                            
