@@ -93,6 +93,8 @@ def runKallisto(infile, outfile):
     nthreads = PARAMS.get("kallisto_nthreads")
     job_memory = PARAMS.get("kallisto_job_mem")
     options = PARAMS.get("kallisto_options")
+    if options == None:
+        options = ""
     sample_name = P.snip(p1, ".fastq.1.gz")
     statement = '''kallisto quant 
                    -i %(transcriptome)s 

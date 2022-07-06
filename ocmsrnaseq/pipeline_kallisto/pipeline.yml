@@ -7,4 +7,6 @@ kallisto:
     nthreads: 1
     job_mem: 2Gb
 
-    options: 
+    # Check the kallisto options. Include the stranded
+    # information here
+    options: --rf-stranded
