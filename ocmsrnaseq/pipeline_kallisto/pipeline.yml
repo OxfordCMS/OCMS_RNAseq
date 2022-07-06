@@ -5,7 +5,6 @@ kallisto:
     transcriptome: ?!
 
     nthreads: 1
-    job_mem: 2Gb
 
     # Check the kallisto options. Include the stranded
     # information here
