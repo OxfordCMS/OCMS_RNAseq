@@ -131,7 +131,7 @@ def transcripts2genes(infile, outfile)
 
 # ---------------------------------------------------
 # Generic pipeline tasks
-@follows(runKallisto)
+@follows(runKallisto, transcripts2genes)
 def full():
     pass
 
