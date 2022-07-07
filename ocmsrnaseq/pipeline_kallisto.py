@@ -116,9 +116,9 @@ def runKallisto(infile, outfile):
 ########################################################
 
 @follows(mkdir("transcripts2genes.dir"))
-@files(PARAMS["transcripts_fasta"],
+@files(PARAMS["kallisto_transcripts_fasta"],
        "transcripts2genes.dir/transcripts2genes.tsv")
-def transcripts2genes(infile, outfile)
+def transcripts2genes(infile, outfile):
     '''
     convert fasta file to tsv files containing transcript2gene
     mapping
