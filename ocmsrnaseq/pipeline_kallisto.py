@@ -67,8 +67,7 @@ SEQUENCEFILES = ("*.fastq.1.gz")
 SEQUENCEFILES_REGEX = regex(
     r"(\S+).(fastq.1.gz)")
 
-scriptsdir = os.path.dirname(os.path.abspath(__file__))
-scriptsdir = P.snip(scriptsdir, "ocmsrnaseq") + "scripts"
+scriptsdir = os.path.dirname(os.path.abspath(__file__)) + "/scripts"
 PARAMS["scriptsdir"] = scriptsdir
 
 ########################################################
@@ -125,7 +124,7 @@ def transcripts2genes(infile, outfile):
     '''
     statement = '''zcat %(infile)s | python %(scriptsdir)s/transcripts2genes.py
                                      --log=transcripts2genes.dir/transcripts2genes.log
-                                     > transcripts2genes.tsv
+                                     > transcripts2genes.dir/transcripts2genes.tsv
                 '''
     P.run(statement)
 
