@@ -107,7 +107,27 @@ def runKallisto(infile, outfile):
                 '''
     P.run(statement)
 
+########################################################
+########################################################
+########################################################
+# Build transcripts to genes mapping
+########################################################
+########################################################
+########################################################
 
+@follows(mkdir("transcripts2genes.dir"))
+@files(PARAMS["transcripts_fasta"],
+       "transcripts2genes.dir/transcripts2genes.tsv")
+def transcripts2genes(infile, outfile)
+    '''
+    convert fasta file to tsv files containing transcript2gene
+    mapping
+    '''
+    statement = '''zcat %(infile)s | python %(scriptsdir)s/transcripts2genes.py
+                                     --log=transcripts2genes.dir/transcripts2genes.log
+                                     > transcripts2genes.tsv
+                '''
+    P.run(statement)
 
 # ---------------------------------------------------
 # Generic pipeline tasks

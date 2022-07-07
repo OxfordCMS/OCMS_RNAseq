@@ -4,6 +4,11 @@ kallisto:
     # kallisto indexed transcriptome
     transcriptome: ?!
 
+    # the fasta file that the index was
+    # built from is used to map transcript
+    # ids to gene ids - for tximport
+    transcripts_fasta: ?!
+
     nthreads: 1
 
     # Check the kallisto options. Include the stranded
