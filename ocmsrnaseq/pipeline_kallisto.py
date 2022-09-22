@@ -115,15 +115,17 @@ def runKallisto(infile, outfile):
 ########################################################
 
 @follows(mkdir("transcripts2genes.dir"))
-@files(PARAMS["kallisto_transcripts_fasta"],
+@files(PARAMS["kallisto_transcripts_gtf"],
        "transcripts2genes.dir/transcripts2genes.tsv")
 def transcripts2genes(infile, outfile):
     '''
     convert fasta file to tsv files containing transcript2gene
     mapping
     '''
-    statement = '''zcat %(infile)s | python %(scriptsdir)s/transcripts2genes.py
+    statement = '''zcat %(infile)s | python %(scriptsdir)s/gtf2genes.py
                                      --log=transcripts2genes.dir/transcripts2genes.log
+                                   | sort -k1,2
+                                   | uniq
                                      > transcripts2genes.dir/transcripts2genes.tsv
                 '''
     P.run(statement)
