@@ -1,0 +1,10 @@
+###############################################
+# Configuration file for pipeline_geomx.py
+###############################################
+
+annotation_file: All_LabWorksheet.txt
+pkc_file: Hs_R_NGS_WTA_v1.0.pkc
+
+# Specify options for geomxngspipeline
+geomx:
+  options:
