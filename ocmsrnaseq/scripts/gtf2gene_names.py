@@ -1,6 +1,6 @@
 '''
-transcripts2genes.py
-====================================================
+gtf2genes.py
+==============
 
 :Author: Nick Ilott
 :Tags: Python
@@ -8,7 +8,7 @@ transcripts2genes.py
 Purpose
 -------
 
-Build a tsv file that maps ensembl transcripts to ensembl genes from ensembl fasta file. This is
+Build a tsv file that maps ensembl transcripts to ensembl genes from ensembl gtf file. This is
 for use with kallisto outputs to be imported using tximport.
 
 Usage
@@ -18,11 +18,11 @@ Usage
 
 Example::
 
-   python transcripts2genes.py
+   python gtf2gene_names.py
 
 Type::
 
-   python transcripts2genes.py --help
+   python gtf2gene_names.py --help
 
 for command line help.
 
@@ -33,7 +33,7 @@ Command line options
 
 import sys
 import cgatcore.experiment as E
-import cgat.FastaIterator as FastaIterator
+import cgat.GTF as GTF
 
 def main(argv=None):
     """script main.
@@ -52,12 +52,20 @@ def main(argv=None):
     # add common options (-h/--help, ...) and parse command line
     (args) = E.start(parser, argv=argv)
 
-    args.stdout.write("TXNAME\tGENEID\n")
-    for fasta in FastaIterator.iterate(args.stdin):
-        title = fasta.title.split(" ")
-        transcript = title[0]
-        gene = [x.replace("gene_name=", "") for x in title if "gene_name=" in x][0]
-        args.stdout.write("\t".join([transcript, gene]) + "\n")
+    args.stdout.write("gene_id\tgene_name\n")
+    gene_ids = []
+    for gtf in GTF.iterator(args.stdin):
+        gene_id = gtf.gene_id
+        try:
+            gene_name = gtf.gene_name
+        except KeyError:
+             #print("could not find gene name in dict for %s" % gtf.gene_id)
+             gene_name = ""
+        if gene_id in gene_ids:
+            continue
+        else:
+            gene_ids.append(gene_id)
+            args.stdout.write("\t".join([gene_id, gene_name]) + "\n")
 
     # write footer and output benchmark information.
     E.stop()

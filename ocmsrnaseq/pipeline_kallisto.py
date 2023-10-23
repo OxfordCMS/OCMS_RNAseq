@@ -84,9 +84,13 @@ def runKallisto(infile, outfile):
     '''classify reads with kraken2
     '''
     # Note that at the moment I only deal with paired-end
-    # reads
+    # reads properly
     p1 = infile
     p2 = p1.replace(".fastq.1.gz", ".fastq.2.gz")
+
+    # bit of a hack about
+    if not os.path.exists(p2):
+        p2 = "--single"
 
     transcriptome = PARAMS.get("kallisto_transcriptome")
     nthreads = PARAMS.get("kallisto_nthreads")
