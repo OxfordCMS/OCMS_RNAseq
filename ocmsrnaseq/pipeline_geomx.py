@@ -25,10 +25,13 @@ PARAMS["rscriptsdir"] = rscriptsdir
 ######################################################################
 
 @follows(mkdir("dcc.dir"))
-@transform("*L001*R1_*.fastq.gz", regex("(\S+)_L00[0-9]_R[0-9]_001.fastq.gz"), r"dcc.dir/\1.dcc")
+@transform("*L001*R1_001.fastq.gz", regex("(\S+)_L00[0-9]_R[0-9]_001.fastq.gz"), r"dcc.dir/\1.dcc")
 def runGeomx(infile, outfile):
     '''
     '''
+    job_memory = PARAMS["geomx_memory"]
+    job_threads = PARAMS["geomx_threads"]
+
     options = PARAMS["geomx_options"]
     outdir = os.path.abspath(os.path.dirname(outfile))
     if not options:
@@ -64,6 +67,7 @@ def runGeomx(infile, outfile):
                    --out=%(tmpdir)s
                    --ini=%(tmpdir)s/config.ini
                    --check-illumina-naming=false
+                   --threads=%(job_threads)s
                    %(options)s;
                    rm -rf %(tmpdir)s/config.ini;
                    rm -rf %(tmpdir)s/*.fastq.gz;

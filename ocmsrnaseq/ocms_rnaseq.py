@@ -23,7 +23,10 @@ def main(argv=None):
         print((globals()["__doc__"]))
 
     command = argv[1]
-    pipeline = "pipeline_{}".format(command)
+    if command in ["gtf2gene_names", "inis2ini"]:
+        pipeline = command
+    else:
+        pipeline = "pipeline_{}".format(command)
     
     # remove 'ocms_rnaseq' from sys.argv
     del sys.argv[0]
