@@ -7,6 +7,6 @@ pkc_file: Hs_R_NGS_WTA_v1.0.pkc
 
 # Specify options for geomxngspipeline
 geomx:
-  job_threads: 4
-  job_memory: 10G 
+  threads: 4
+  memory: 10G 
   options:
