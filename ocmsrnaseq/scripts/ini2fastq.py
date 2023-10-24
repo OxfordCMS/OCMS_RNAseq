@@ -66,7 +66,7 @@ for sample, associated_data in sample_map2.items():
             new_lane = dat[2].replace(dat[2], "L001")
         else:
             new_lane = dat[2]
-        new_fname = "_".join([dat[1].split("_")[0], new_lane, dat[3]])
+        new_fname = "_".join([dat[1].split("_")[0], new_lane, dat[3].replace(".fastq.gz", "_001.fastq.gz")])
 
         mapping.write(dat[0] + "\t" + new_fname + "\n")
 
