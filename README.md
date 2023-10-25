@@ -81,6 +81,81 @@ This allows you to specify the location of the kallisto index for the species an
 
 ## Geomx
 
+This pipeline is used to quantitate probes associated with spatial profiling using the Nanostring Geomx DSP platform.
+
+### Dependencies
+
+You need to make sure that you have all of the relevant modules for the pipeline to run. On the BMRC this looks something like:
+
+module load Python/3.8.2-GCCcore-9.3.0
+source ~/devel/venv/Python-3.8.2-GCCcore-9.3.0/${MODULE_CPU_TYPE}/bin/activate;
+module load geomx/2.3.3.10;
+module load R/4.2.1-foss-2020a-bare
+
+Make sure that the R version that you load has GeomxTools installed.
+
+
+### Input files
+
+You need four input files to run the pipeline to completion:
+
+* Fastq files (sequenced probes)
+* LabWorksheet (Annotation of regions/areas of interest from the DSP)
+* .pkc file (probe annotations for species of interest)
+* .ini configuration file that contains information for each sample and probes used.
+
+#### Fastq files
+
+The fastq file names must match the sample names found in the .ini config file. For example, the DSP will name captured regions as something like DSP-12789924-B-A01. This corresponds to probes that are captured in well A01. Names of fastq files often differ from these names and may need to be changed. There is a script to rename fastq files that are compatible with the geomx pipeline in ./ocmsrnaseq/scripts/ini2fastq.py which can be run on samples derived from Novogene names. 
+
+The name of the fastq files needs to be for example:
+
+DSP-12789924-B-A01_L001_R1_001.fastq.gz
+DSP-12789924-B-A01_L001_R2_001.fastq.gz
+
+The sample name is derived from the portion before the first underscore. L001 corresponds to lane 1 and R1 to read 1 of a pair etc. If there are multiple lanes per sample there HAS TO BE a L001_R1_001.fastq.gz file present for a sample. This is because the pipeline picks up this sample in order to combine data. If there isn't a L001 file for a particular sample then you will need to rename one of your files so that it acts as a "dummy" file for this lane. This is taken care of in ./ocmsrnaseq/scripts/ini2fastq.py if the sequencing is from Novogene.
+
+
+#### LabWorksheet
+
+This is a .txt file that is obtained from the DSP machine. The only difference is that it does not contain the first 15 lines (i.e. machine parameters etc) so the first 15 lines need to be removed before running the pipeline:
+
+```
+tail -n+15 LabWorksheet.txt > pipeline_LabWorksheet.txt
+```
+
+Specify the name of the annotation file in the pipeline.yml before running the pipeline (parameter is annotation_file: )
+
+#### .pkc file
+
+The .pkc file is obtained from the Nanostring website and contains mapping between probe ids and gene annotations etc.
+
+Specify the path to the .pkc file in the pipeline.yml before running the pipeline.
+
+#### .ini file
+
+The .ini file is used to produce the .dcc file outputs for each sample. The pipeline creates a new .ini for each sample so that they can all be run in parallel. This is obtained for each experiment on the DSP.
+
+### Running the pipeline
+
+Create a run directory and link fastq files, .ini, .pkc and Labworksheet into the working directory. Run:
+
+
+```
+ocms_rnaseq geomx config
+```
+
+This will produce the pipeline.yml file that you can edit to point to the relevant annotation files. To run the pipeline type for example:
+
+
+```
+ocms_rnaseq geomx make full -v5 -p96
+```
+
+### Output files
+
+The counts files for each sample (.dcc files) are output into dcc.dir/ and can be used for downtream analysis. A NanostringGeoMxSet is also produced in NanoStringGeoMxSet.dir/. This is an .Rds file and so can be loaded straight into R for analysis with GeoMxTools or shiny-geomx.
+
 
 
 ## CITE-seq-count
