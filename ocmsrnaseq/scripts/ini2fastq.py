@@ -19,7 +19,7 @@ import os
 # usage -> python ini2fastq.py config.ini 
 
 # positional arguments and globs for files
-fastqs = glob.glob("*.fq.gz")
+fastqs = glob.glob("*.fastq.gz")
 
 ini_file = sys.argv[1] 
 
