@@ -67,10 +67,10 @@ import glob
 
 # import modules from the cgat code collection
 import cgatcore.experiment as E
-import cgatpipelines.tasks.mapping as mapping
+#import cgatpipelines.tasks.mapping as mapping
 from cgatcore import pipeline as P
-import cgatpipelines.tasks.readqc as readqc
-import cgatpipelines.tasks.preprocess as preprocess
+#import cgatpipelines.tasks.readqc as readqc
+#import cgatpipelines.tasks.preprocess as preprocess
 import cgatcore.iotools as iotools
 
 
