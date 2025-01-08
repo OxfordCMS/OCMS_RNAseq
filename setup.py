@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 setup(
     # package information
     name='ocms_rnaseq',
-    version="0.0.1",
+    version="0.0.2",
     description='OCMS_RNAseq : Oxford Centre for Microbiome Studies pipelines for RNAseq processing',
     author='Nicholas Ilott',
     license="MIT",
