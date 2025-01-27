@@ -35,34 +35,9 @@ This will place relevant modules in your path and enable the use of the simplifi
 
 There are a variety of pipelines related to RNAseq data processing. These are
 
-* pipeline_fastqc
 * pipeline_geomx
 * pipeline_kallisto
 * pipeline_cite-seq-count
-
-## Fastqc
-
-Fastqc allows you to perform basic QC on a set of fastq files.
-
-### Input files
-
-Fastq files from for example an RNA-seq experiment.
-
-### Running the pipeline
-
-Make sure you have the relevant modules loaded. On BMRC this looks like:
-
-module load Python/3.8.2-GCCcore-9.3.0
-source ~/devel/venv/Python-3.8.2-GCCcore-9.3.0/${MODULE_CPU_TYPE}/bin/activate
-module load FastQC/0.11.9-Java-11
-module load MultiQC/1.9-foss-2020a-Python-3.8.2
-
-Assuming you are in a working directory that has all of your fastq files in you can run the pipeline by typing:
-
-    ocms_rnaseq fastqc config
-    ocms_rnaseq fastqc make full -v5 -p24
-
-This will run fastqx followed by multiQC in order to produce a multiQC report which is found as multiqc_report.html in the working directory.
 
 ## kallisto
 
